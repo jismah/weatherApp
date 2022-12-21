@@ -9,26 +9,7 @@ import Grid from '@mui/material/Grid';
 
 import Link from 'next/link'
 
-export default function Home() {
-
-  const [latitude, setLatitude] = useState('');
-  const [longitude, setLongitude] = useState('');
-
-  const [open, setOpen] = useState(false);
-
-  const handleClick = () => {
-    setOpen(true);
-  };
-
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-
-    setOpen(false);
-  };
-
-
+function Home() {
 
   return (
     <div className={styles.container}>
@@ -45,39 +26,14 @@ export default function Home() {
               <img src='./weather.png' style={{ backgroundRepeat: 0 }} width="500" height="600"></img>
             </div>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={6} className={styles.main}>
             <h1 className={styles.title}>
               Welcome to <a href="">WeatherApp!</a>
             </h1>
 
             <div className={styles.description}>
-              <h4>Enter your coordinates to see your current weather</h4>
-              <Box
-                component="form"
-                sx={{
-                  '& .MuiTextField-root': { m: 1, width: '25ch' },
-                }}
-                noValidate
-                autoComplete="off"
-              >
-                <div>
-                  <TextField
-                    required
-                    id="filled-required"
-                    label="Latitude"
-                    variant='filled'
-                    onChange={(e) => setLatitude(e.target.value)}
-                  />
-                  <TextField
-                    required
-                    id="outlined-disabled"
-                    label="Longitude"
-                    variant='filled'
-                    onChange={(e) => setLongitude(e.target.value)}
-                  />
-                </div>
-              </Box>
-              <Box sx={{ m: 4 }} />
+              <h4>To know your current weather you just need to enter your coordinates and that's it!</h4>
+
               <Link href="/weather" passHref>
                 <Button
                   size="large"
@@ -86,14 +42,6 @@ export default function Home() {
                   Go to see my Weather
                 </Button>
               </Link>
-              <Snackbar
-                open={open}
-                autoHideDuration={6000}
-                onClose={handleClose}
-                message={latitude}
-
-              />
-
             </div>
 
           </Grid>
@@ -104,3 +52,7 @@ export default function Home() {
     </div>
   )
 }
+
+export default Home;
+
+

@@ -7,24 +7,38 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
 import CircularProgress from '@mui/material/CircularProgress';
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import CardMedia from '@mui/material/CardMedia';
-
+import TextField from '@mui/material/TextField';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
+import Grid from '@mui/material/Grid';
 
 import Link from 'next/link'
 
 function weather() {
 
-    const [urlAPI, setUrlAPI] = useState('https://api.openweathermap.org/data/2.5/weather?lat=19.4517&lon=-70.69703&lang=en&units=metric&appid=7231c79e8c90736a60b3fc1e0f9d2f27');
+    const [urlAPI, setUrlAPI] = useState('');
     const [weather, setWeather] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [open, setOpen] = React.useState(false);
 
-    // OBTENER DATA DE API Y GUARDAR EN UN OBJETO
-    useEffect(() => {
+    const [latitude, setLatitude] = useState(0);
+    const [longitude, setLongitude] = useState(0);
+    const [icon, setIcon] = useState('');
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    const findWeather = () => {
+        setUrlAPI('https://api.openweathermap.org/data/2.5/weather?lat=' + latitude + '&lon=' + longitude + '&lang=en&units=metric&appid=7231c79e8c90736a60b3fc1e0f9d2f27');
         fetch(urlAPI)
             .then(res => res.json())
             .then(data => {
@@ -38,9 +52,45 @@ function weather() {
                 };
 
                 setWeather(weatherData);
+                console.log(urlAPI);
+
                 setLoading(false);
             });
+        setOpen(false);
+    };
+
+    // OBTENER DATA DE API Y GUARDAR EN UN OBJETO
+    useEffect(() => {
+        navigator.geolocation.getCurrentPosition(function (position) {
+
+            const url = ('https://api.openweathermap.org/data/2.5/weather?lat=' + position.coords.latitude + '&lon=' + position.coords.longitude + '&lang=en&units=metric&appid=7231c79e8c90736a60b3fc1e0f9d2f27');
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    const weatherData = {
+                        main: data.weather[0].main,
+                        description: data.weather[0].description,
+                        temp: data.main.temp,
+                        tempMin: data.main.temp_min,
+                        tempMax: data.main.temp_max,
+                        city: data.name,
+                        country: data.sys.country,
+                        wind: data.wind.speed,
+                        humidity: data.main.humidity,
+                        pressure: data.main.pressure,
+                        icon: data.weather[0].icon,
+
+                    };
+
+                    setWeather(weatherData);
+                    setIcon(weatherData.icon);
+                    setLoading(false);
+                });
+        });
+
+
     }, []);
+
 
 
     return (
@@ -52,19 +102,22 @@ function weather() {
             </Head>
             {/* NAVBAR */}
             <Box sx={{ flexGrow: 1 }}>
-                <AppBar position="static">
-                    <Toolbar variant='dense'>
+                <AppBar position="fixed">
+                    <Toolbar>
                         <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                             WeatherApp
                         </Typography>
                         <Link href="/" passHref>
                             <Button color="inherit">Home</Button>
                         </Link>
+                        <Button variant='outlined' color="inherit" onClick={handleClickOpen}>Find The Weather</Button>
                     </Toolbar>
                 </AppBar>
             </Box>
             {/* CONTENIDO DE PAGINA */}
             <main className={styles.main}>
+
+
                 <div className={styles.description}>
                     {/* LOADER */}
                     {loading ?
@@ -73,33 +126,80 @@ function weather() {
                     {weather ? (
                         // DATOS DE API
                         <div>
+                            <Typography gutterBottom variant="h4">
+                                Right now in <strong>{weather.city}, {weather.country}</strong>, it's {weather.description}
+                            </Typography>
+                            <Box mt={6}/>
+                            <Box sx={{ flexGrow: 1 }}>
 
-                            <Card sx={{ maxWidth: 645 }}>
-                                <CardMedia
-                                    component="img"
-                                    height="300"
-                                    image="../26302.jpg"
-                                    alt="green iguana"
-                                />
-                                <CardContent>
-                                    <Typography gutterBottom variant="h4" component="h1">
-                                       <strong>Your're in {weather.city}</strong>
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                        Your current location is {weather.city}, its weather is <strong>{weather.main}</strong>, more specifically <strong>{weather.description}</strong>. 
-                                        Its temperature is <strong>{weather.temp} °C</strong>
-                                    </Typography>
-                                </CardContent>
-                                <CardActions>
-                                    <Button size="small">Go back</Button>
-                                </CardActions>
-                            </Card>
+                                <Grid container spacing={2}>
+                                    <Grid justifyContent="center" alignItems="center" item xs={4}>
+                                        <img src={"http://openweathermap.org/img/wn/"+ icon +"@4x.png"} alt="Icon Weather"></img>
+                                    </Grid>
+                                    <Grid justifyContent="center" alignItems="center" item xs={4}>
+
+                                        <Typography variant="h2">
+                                            <strong>{weather.temp} °C</strong>
+                                        </Typography>
+                                        <br/>
+                                        <Typography variant="body2">
+                                            {weather.tempMin}° / {weather.tempMax}°
+                                        </Typography>
+
+                                    </Grid>
+                                    <Grid justifyContent="center" alignItems="center" item xs={4}>
+                                        {weather.wind} km/h
+                                        <br/>
+                                        {weather.humidity} %
+                                        <br/>
+                                        {weather.pressure} Pa
+                                    </Grid>
+                                </Grid>
+                            </Box>
 
                         </div>
-                    ) : null}
-                </div>
-            </main>
-        </div>
+                    ) : null
+                    }
+                    <Dialog open={open} onClose={handleClose}>
+                        <DialogTitle>Find your Weather</DialogTitle>
+                        <DialogContent>
+                            <DialogContentText>
+                                To get the weather of any place you want or where you are currently,
+                                enter its coordinates below.
+                            </DialogContentText>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                id="latitude"
+                                label="Latitude"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={latitude}
+                                name="latitude"
+                                onChange={e => setLatitude(e.target.value)}
+                            />
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                id="longitude"
+                                label="Logitude"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={longitude}
+                                name="longitude"
+                                onChange={e => setLongitude(e.target.value)}
+                            />
+                        </DialogContent>
+                        <DialogActions>
+                            <Button color="error" onClick={handleClose}>Cancel</Button>
+                            <Button variant='contained' onClick={findWeather}>Search</Button>
+                        </DialogActions>
+                    </Dialog>
+                </div >
+            </main >
+        </div >
     )
 }
 
